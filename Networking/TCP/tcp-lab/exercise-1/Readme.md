@@ -1,13 +1,15 @@
 ## Build the Environment
 
 **Step 1:** Create directory
-``` mkdir tcp-lab
-    cd tcp-lab
+```
+mkdir tcp-lab
+cd tcp-lab
 ```
 
 **Step 2:** Create docker compose file
-``` touch docker-compose.yml
-    vi docker-compose.yml
+```
+touch docker-compose.yml
+vi docker-compose.yml
 ```
 Copy the code from shared docker-compose.yml in your docker compose file.
 
