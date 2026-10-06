@@ -1,0 +1,23 @@
+services:
+  client:
+    image: ubuntu:latest
+    container_name: ubuntu_client
+    command: sleep infinity
+    networks:
+      tcpnet:
+         ipv4_address: 10.10.0.2
+
+  server:
+    image: ubuntu:latest
+    container_name: ubuntu_server
+    command: sleep infinity
+    networks:
+      tcpnet:
+         ipv4_address: 10.10.0.3
+
+networks:
+  tcpnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.0.0/24
