@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TCP Terminology Overview — RFC 9293, Section 3.3">
+  <title>TCP Terminology Overview — RFC 9293</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: #fff;
+      --ink: #182230;
+      --muted: #5d6b7b;
+      --line: #dce4ee;
+      --accent: #2563eb;
+      --accent2: #0f766e;
+      --soft: #eef4ff;
+      --code: #101827;
+      --shadow: 0 14px 40px rgba(20, 35, 55, .08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #173a6b 55%, #0f766e 100%);
+      color: #fff;
+      padding: 64px 24px 54px;
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 11px;
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 999px;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      line-height: 1.08;
+      letter-spacing: -.04em;
+    }
+
+    .hero p {
+      max-width: 780px;
+      margin: 0;
+      color: #dbeafe;
+      font-size: 1.05rem;
+    }
+
+    .layout {
+      max-width: 1100px;
+      margin: -28px auto 60px;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 30px;
+      margin: 22px 0;
+    }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+    }
+
+    .toc a {
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-weight: 650;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1.75rem;
+      letter-spacing: -.025em;
+    }
+
+    h3 {
+      margin: 0 0 5px;
+      font-size: 1.08rem;
+    }
+
+    .lead {
+      color: var(--muted);
+    }
+
+    .kicker {
+      color: var(--accent);
+      font-weight: 750;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      background: #f7f9fc;
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #536174;
+    }
+
+    code {
+      background: #edf2f7;
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-weight: 700;
+      color: #17324d;
+    }
+
+    .diagram-wrap {
+      overflow: auto;
+      border-radius: 14px;
+      background: var(--code);
+      border: 1px solid #273449;
+    }
+
+    pre {
+      margin: 0;
+      padding: 22px;
+      color: #dce8f8;
+      font: 500 .86rem/1.45 "SFMono-Regular", Consolas, monospace;
+      min-width: max-content;
+    }
+
+    .caption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+      text-align: center;
+    }
+
+    .sequence-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .sequence-box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      background: #fbfdff;
+    }
+
+    .sequence-box h3 {
+      color: var(--accent2);
+    }
+
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 12px;
+    }
+
+    .state-card {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfdff;
+    }
+
+    .state-number {
+      flex: 0 0 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--soft);
+      color: var(--accent);
+      font-weight: 800;
+      font-size: .8rem;
+    }
+
+    .state-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .94rem;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--soft);
+      padding: 16px 18px;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .note {
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .note:last-child {
+      border-bottom: 0;
+    }
+
+    .note strong {
+      color: var(--accent);
+    }
+
+    .note p {
+      margin: 5px 0 0;
+      color: var(--muted);
+    }
+
+    .footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px 50px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    @media (max-width:760px) {
+      .hero {
+        padding: 44px 18px;
+      }
+
+      .layout {
+        padding: 0 12px;
+        margin-top: -18px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 14px;
+      }
+
+      .sequence-grid {
+        grid-template-columns: 1fr;
+      }
+
+      th,
+      td {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">ASD-STE100 • TCP • RFC 9293</span>
+      <h1>3.3. TCP Terminology Overview</h1>
+      <p>A readable reference for TCP connection state, sequence variables, current-segment variables, and the TCP
+        connection state machine.</p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <div class="kicker">Navigation</div>
+      <div class="toc">
+        <a href="#variables">3.3.1 — Key Connection State Variables</a>
+        <a href="#sequence">Sequence Space</a>
+        <a href="#states">State Machine Overview</a>
+        <a href="#diagram">Connection State Diagram</a>
+        <a href="#notes">Diagram Notes</a>
+      </div>
+    </section>
+
+    <section class="card" id="overview">
+      <div class="kicker">Section 3.3</div>
+      <h2>TCP Terminology Overview</h2>
+      <p class="lead">This section introduces the key terms needed to understand the detailed TCP protocol operation. A
+        glossary is provided in <a href="https://www.rfc-editor.org/rfc/rfc9293.html#glossary" target="_blank"
+          rel="noopener">Section 4</a>.</p>
+    </section>
+
+    <section class="card" id="variables">
+      <div class="kicker">Section 3.3.1</div>
+      <h2>Key Connection State Variables</h2>
+      <p>TCP maintains state for several variables during a connection. These variables are stored in a
+        <strong>Transmission Control Block (TCB)</strong>.</p>
+      <p>The TCB includes local and remote IP addresses and port numbers, the IP security level and compartment,
+        pointers to user send and receive buffers, pointers to the retransmit queue and current segment, and variables
+        related to send and receive sequence numbers.</p>
+
+      <h3>Send Sequence Variables</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>SND.UNA</code></td>
+            <td>Send unacknowledged</td>
+          </tr>
+          <tr>
+            <td><code>SND.NXT</code></td>
+            <td>Send next</td>
+          </tr>
+          <tr>
+            <td><code>SND.WND</code></td>
+            <td>Send window</td>
+          </tr>
+          <tr>
+            <td><code>SND.UP</code></td>
+            <td>Send urgent pointer</td>
+          </tr>
+          <tr>
+            <td><code>SND.WL1</code></td>
+            <td>Segment sequence number used for the last window update</td>
+          </tr>
+          <tr>
+            <td><code>SND.WL2</code></td>
+            <td>Segment acknowledgment number used for the last window update</td>
+          </tr>
+          <tr>
+            <td><code>ISS</code></td>
+            <td>Initial send sequence number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top:28px">Receive Sequence Variables</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>RCV.NXT</code></td>
+            <td>Receive next</td>
+          </tr>
+          <tr>
+            <td><code>RCV.WND</code></td>
+            <td>Receive window</td>
+          </tr>
+          <tr>
+            <td><code>RCV.UP</code></td>
+            <td>Receive urgent pointer</td>
+          </tr>
+          <tr>
+            <td><code>IRS</code></td>
+            <td>Initial receive sequence number</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="sequence">
+      <div class="kicker">Sequence Space</div>
+      <h2>Send and Receive Sequence Space</h2>
+      <div class="sequence-grid">
+        <div class="sequence-box">
+          <h3>Send Sequence Space</h3>
+          <div class="diagram-wrap">
+            <pre>                    1         2          3          4
+               ----------|----------|----------|----------
+                      SND.UNA    SND.NXT    SND.UNA
+                                           +SND.WND
+
+         1 - old sequence numbers that have been acknowledged
+         2 - sequence numbers of unacknowledged data
+         3 - sequence numbers allowed for new data transmission
+         4 - future sequence numbers that are not yet allowed</pre>
+          </div>
+          <p class="caption">Figure 3 — Send Sequence Space</p>
+          <p>The <strong>send window</strong> is the portion labeled <strong>3</strong>.</p>
+        </div>
+        <div class="sequence-box">
+          <h3>Receive Sequence Space</h3>
+          <div class="diagram-wrap">
+            <pre>                        1          2          3
+                    ----------|----------|----------
+                           RCV.NXT    RCV.NXT
+                                     +RCV.WND
+
+         1 - old sequence numbers that have been acknowledged
+         2 - sequence numbers allowed for new reception
+         3 - future sequence numbers that are not yet allowed</pre>
+          </div>
+          <p class="caption">Figure 4 — Receive Sequence Space</p>
+          <p>The <strong>receive window</strong> is the portion labeled <strong>2</strong>.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:30px">Current Segment Variables</h3>
+      <p class="lead">These variables take their values from fields in the current TCP segment.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>SEG.SEQ</code></td>
+            <td>Segment sequence number</td>
+          </tr>
+          <tr>
+            <td><code>SEG.ACK</code></td>
+            <td>Segment acknowledgment number</td>
+          </tr>
+          <tr>
+            <td><code>SEG.LEN</code></td>
+            <td>Segment length</td>
+          </tr>
+          <tr>
+            <td><code>SEG.WND</code></td>
+            <td>Segment window</td>
+          </tr>
+          <tr>
+            <td><code>SEG.UP</code></td>
+            <td>Segment urgent pointer</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="states">
+      <div class="kicker">Section 3.3.2</div>
+      <h2>State Machine Overview</h2>
+      <p>A TCP connection moves through a series of states during its lifetime. The states are <strong>LISTEN, SYN-SENT,
+          SYN-RECEIVED, ESTABLISHED, FIN-WAIT-1, FIN-WAIT-2, CLOSE-WAIT, CLOSING, LAST-ACK, TIME-WAIT</strong>, and the
+        fictional state <strong>CLOSED</strong>.</p>
+      <div class="state-grid">
+        <article class="state-card">
+          <div class="state-number">01</div>
+          <div>
+            <h3>LISTEN</h3>
+            <p>Waits for a connection request from a remote TCP peer and port.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">02</div>
+          <div>
+            <h3>SYN-SENT</h3>
+            <p>Waits for a matching connection request after sending a connection request.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">03</div>
+          <div>
+            <h3>SYN-RECEIVED</h3>
+            <p>Waits for a confirming acknowledgment after receiving and sending a connection request.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">04</div>
+          <div>
+            <h3>ESTABLISHED</h3>
+            <p>An open connection. Received data can be delivered to the user. This is the normal data-transfer state.
+            </p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">05</div>
+          <div>
+            <h3>FIN-WAIT-1</h3>
+            <p>Waits for a termination request from the remote peer or an acknowledgment of the local termination
+              request.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">06</div>
+          <div>
+            <h3>FIN-WAIT-2</h3>
+            <p>Waits for a termination request from the remote peer.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">07</div>
+          <div>
+            <h3>CLOSE-WAIT</h3>
+            <p>Waits for a termination request from the local user.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">08</div>
+          <div>
+            <h3>CLOSING</h3>
+            <p>Waits for an acknowledgment of the termination request from the remote peer.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">09</div>
+          <div>
+            <h3>LAST-ACK</h3>
+            <p>Waits for an acknowledgment of the termination request already sent to the remote peer.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">10</div>
+          <div>
+            <h3>TIME-WAIT</h3>
+            <p>Waits long enough to confirm that the peer received the acknowledgment and to prevent delayed segments
+              from affecting a new connection.</p>
+          </div>
+        </article>
+        <article class="state-card">
+          <div class="state-number">11</div>
+          <div>
+            <h3>CLOSED</h3>
+            <p>No connection state. There is no TCB and therefore no connection.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="kicker">Connection Events</div>
+      <h2>What Causes State Changes?</h2>
+      <p>A TCP connection moves from one state to another in response to events such as:</p>
+      <ul>
+        <li>User calls: <code>OPEN</code>, <code>SEND</code>, <code>RECEIVE</code>, <code>CLOSE</code>,
+          <code>ABORT</code>, and <code>STATUS</code>.</li>
+        <li>Incoming segments, especially those containing <code>SYN</code>, <code>ACK</code>, <code>RST</code>, and
+          <code>FIN</code> flags.</li>
+        <li>Timeouts.</li>
+      </ul>
+      <div class="callout">
+        <strong>OPEN behavior:</strong> An <em>active OPEN</em> attempts to start a connection. A <em>passive OPEN</em>
+        waits for incoming connection requests.
+      </div>
+    </section>
+
+    <section class="card" id="diagram">
+      <div class="kicker">Figure 5</div>
+      <h2>TCP Connection State Diagram</h2>
+      <p class="lead">The diagram summarizes state changes, the events that cause them, and the resulting actions. It
+        does not describe every error condition or every action that does not change state.</p>
+      <div class="callout" style="margin-bottom:18px"><strong>NOTA BENE:</strong> This diagram is only a summary. It is
+        not the complete TCP specification. Many details are not included.</div>
+      <div class="diagram-wrap">
+        <pre>                             +---------+ ---------\      active OPEN
+                             |  CLOSED |            \    -----------
+                             +---------+&lt;---------\   \   create TCB
+                               |     ^              \   \  snd SYN
+                      passive OPEN |     |   CLOSE    \   \
+                      ------------ |     | ----------   \   \
+                       create TCB  |     | delete TCB     \   \
+                                   V     |                  \   \
+           rcv RST (note 1)  +---------+            CLOSE    |    \
+        --------------------&gt;|  LISTEN |          ---------- |     |
+       /                     +---------+          delete TCB |     |
+      /           rcv SYN      |     |    SEND              |     |
+     /           -----------   |     |   -------            |     V
+ +--------+      snd SYN,ACK  /       \  snd SYN          +--------+
+ |        |&lt;-----------------           ------------------&gt;|        |
+ |  SYN   |                    rcv SYN                     |  SYN   |
+ |  RCVD  |&lt;-----------------------------------------------|  SENT  |
+ |        |                  snd SYN,ACK                   |        |
+ +--------+   rcv ACK of SYN  \       /  rcv SYN,ACK       +--------+
+    |         --------------   |     |   -----------
+    |                x         |     |     snd ACK
+    |                          V     V
+    |  CLOSE                 +---------+
+    | -------                |  ESTAB  |
+    | snd FIN                +---------+
+    |                 CLOSE    |     |    rcv FIN
+    V                -------   |     |    -------
+ +---------+         snd FIN  /       \   snd ACK         +---------+
+ |  FIN    |&lt;----------------          ------------------&gt;|  CLOSE  |
+ | WAIT-1  |------------------                            |   WAIT  |
+ +---------+          rcv FIN  \                          +---------+
+   | rcv ACK of FIN   -------   |                          CLOSE  |
+   | --------------   snd ACK   |                         ------- |
+   V        x                   V                         snd FIN V
+ +---------+               +---------+                    +---------+
+ |FINWAIT-2|               | CLOSING |                    | LAST-ACK|
+ +---------+               +---------+                    +---------+
+   |              rcv ACK of FIN |                 rcv ACK of FIN |
+   |  rcv FIN     -------------- |    Timeout=2MSL -------------- |
+   |  -------            x       V    ------------        x       V
+    \ snd ACK              +---------+delete TCB          +---------+
+      --------------------&gt;|TIME-WAIT|-------------------&gt;| CLOSED  |
+                           +---------+                    +---------+</pre>
+      </div>
+      <p class="caption">Figure 5 — TCP Connection State Diagram</p>
+    </section>
+
+    <section class="card" id="notes">
+      <div class="kicker">Figure 5 Notes</div>
+      <h2>Notes and Exceptions</h2>
+      <div class="note"><strong>Note 1</strong>
+        <p>The transition from SYN-RECEIVED to LISTEN after receiving a RST is conditional. It applies when SYN-RECEIVED
+          was reached after a passive OPEN.</p>
+      </div>
+      <div class="note"><strong>Note 2</strong>
+        <p>The figure omits the transition from FIN-WAIT-1 to TIME-WAIT when a FIN is received and the local FIN is also
+          acknowledged.</p>
+      </div>
+      <div class="note"><strong>Note 3</strong>
+        <p>A RST can be sent from any state with a corresponding transition to TIME-WAIT. These transitions are not
+          shown because they would make the diagram difficult to read. Receipt of a RST from any state results in a
+          transition to LISTEN or CLOSED; these transitions are also omitted for legibility.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="kicker">Source</div>
+      <h2>RFC Reference</h2>
+      <p>This page is a formatted presentation of the supplied material from <a
+          href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noopener">RFC 9293</a>, Section 3.3,
+        “TCP Terminology Overview”.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Formatted for readability • TCP Terminology Overview • RFC 9293 Section 3.3</p>
+  </footer>
+</body>
+
+</html>
