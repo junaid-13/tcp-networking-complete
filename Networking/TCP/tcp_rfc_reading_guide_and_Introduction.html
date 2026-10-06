@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TCP — Introduction & Key Concepts</title>
+  <meta name="description"
+    content="A readable, visually polished presentation of the TCP RFC introduction and key concepts.">
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --text: #172033;
+      --muted: #5d687c;
+      --line: #e5e9f0;
+      --accent: #2563eb;
+      --accent-2: #0ea5e9;
+      --accent-soft: #eff6ff;
+      --green: #0f766e;
+      --green-soft: #ecfdf5;
+      --amber: #a16207;
+      --amber-soft: #fffbeb;
+      --shadow: 0 18px 50px rgba(23, 32, 51, .08);
+      --radius: 18px;
+      --max: 1050px;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37, 99, 235, .08), transparent 30rem),
+        radial-gradient(circle at 90% 15%, rgba(14, 165, 233, .07), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      line-height: 1.72;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none
+    }
+
+    a:hover {
+      text-decoration: underline
+    }
+
+    .hero {
+      padding: 64px 20px 42px;
+    }
+
+    .hero-inner {
+      max-width: var(--max);
+      margin: auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 1px solid #dbe5f5;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .75);
+      color: #315b9d;
+      font-size: .78rem;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(2.25rem, 5vw, 4rem);
+      line-height: 1.06;
+      letter-spacing: -.045em;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .layout {
+      max-width: var(--max);
+      margin: 0 auto 80px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 34px;
+    }
+
+    .toc {
+      position: sticky;
+      top: 22px;
+      align-self: start;
+      padding: 18px;
+      background: rgba(255, 255, 255, .76);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .toc-title {
+      margin: 0 0 12px;
+      color: #344054;
+      font-size: .75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+    }
+
+    .toc a {
+      display: block;
+      padding: 7px 8px;
+      border-radius: 8px;
+      color: #596579;
+      font-size: .88rem;
+    }
+
+    .toc a:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+      text-decoration: none
+    }
+
+    main {
+      min-width: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    section {
+      padding: 42px 46px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-child {
+      border-bottom: 0
+    }
+
+    .section-kicker {
+      color: var(--accent);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 7px 0 18px;
+      font-size: 1.8rem;
+      line-height: 1.2;
+      letter-spacing: -.025em;
+    }
+
+    h3 {
+      margin: 30px 0 10px;
+      font-size: 1.05rem;
+    }
+
+    p {
+      margin: 0 0 17px
+    }
+
+    p:last-child {
+      margin-bottom: 0
+    }
+
+    .lead {
+      font-size: 1.08rem;
+      color: #3f4b60;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .card {
+      padding: 20px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: .95rem;
+    }
+
+    .card span {
+      color: var(--muted);
+      font-size: .91rem
+    }
+
+    .callout {
+      margin: 24px 0;
+      padding: 20px 22px;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 14px 14px 0;
+      background: var(--accent-soft);
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 5px
+    }
+
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 20px 0 26px;
+    }
+
+    .keyword {
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #eef2ff;
+      border: 1px solid #dfe5ff;
+      color: #3730a3;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: .78rem;
+      font-weight: 800;
+    }
+
+    .requirement-box {
+      padding: 22px;
+      border: 1px solid #cde9df;
+      background: var(--green-soft);
+      border-radius: 16px;
+      margin-top: 20px;
+    }
+
+    .requirement-box h3 {
+      margin-top: 0;
+      color: var(--green);
+    }
+
+    .concept-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .concept {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 850;
+      font-size: .82rem;
+    }
+
+    .concept strong {
+      display: block;
+      margin-bottom: 3px
+    }
+
+    .concept p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .93rem
+    }
+
+    .reference {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 7px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: .78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    footer {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 20px 48px;
+      color: #7a8495;
+      font-size: .82rem;
+      text-align: center;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: 1fr
+      }
+
+      .toc {
+        position: static
+      }
+
+      .toc a {
+        display: inline-block;
+        margin-right: 4px
+      }
+
+      section {
+        padding: 32px 24px
+      }
+    }
+
+    @media (max-width: 560px) {
+      .hero {
+        padding-top: 42px
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr
+      }
+
+      h1 {
+        font-size: 2.35rem
+      }
+
+      section {
+        padding: 28px 20px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow"><span class="dot"></span> Transmission Control Protocol</div>
+      <h1>Introduction &amp; Key TCP Concepts</h1>
+      <p class="subtitle">
+        A clean, reader-friendly presentation of the normative TCP behavior described
+        in RFC 9293, with the surrounding concepts and requirements language made easier to scan.
+      </p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-title">On this page</div>
+      <a href="#introduction">Introduction</a>
+      <a href="#requirements">Requirements Language</a>
+      <a href="#concepts">Key TCP Concepts</a>
+      <a href="#summary">At a glance</a>
+    </nav>
+
+    <main>
+      <section id="introduction">
+        <div class="section-kicker">Section 1</div>
+        <h2>Introduction</h2>
+
+        <p class="lead">
+          RFC 793 contains a discussion of the TCP design goals and provides examples
+          of its operation, including examples of connection establishment, connection
+          termination, and packet retransmission to repair losses.
+        </p>
+
+        <p>
+          This document describes the basic functionality expected in modern TCP
+          implementations and replaces the protocol specification in RFC 793. It does
+          not replicate or attempt to update the introduction and philosophy content in
+          Sections 1 and 2 of RFC 793.
+        </p>
+
+        <p>
+          Other documents are referenced to provide explanations of the theory of
+          operation, rationale, and detailed discussion of design decisions. This
+          document focuses on the <strong>normative behavior</strong> of the protocol.
+        </p>
+
+        <div class="callout">
+          <strong>Core purpose</strong>
+          The specification concentrates on the protocol behavior that implementations
+          need to follow for basic TCP interoperability.
+        </div>
+
+        <h3>TCP Roadmap and related specifications</h3>
+
+        <p>
+          The <a href="https://www.rfc-editor.org/rfc/rfc7414.html" target="_blank" rel="noopener">TCP Roadmap</a>
+          provides a more extensive guide to the RFCs that define TCP and describe
+          important algorithms.
+        </p>
+
+        <div class="info-grid">
+          <div class="card">
+            <strong>Congestion control</strong>
+            <span>
+              Congestion control is a TCP requirement, but its detailed algorithms are
+              outside the basic scope of this specification.
+            </span>
+          </div>
+          <div class="card">
+            <strong>High-performance extensions</strong>
+            <span>
+              Many modern implementations support RFC 7323 extensions, although they
+              are not strictly required for basic operation.
+            </span>
+          </div>
+          <div class="card">
+            <strong>Multipath TCP</strong>
+            <span>
+              Multipath considerations are specified separately in RFC 8684.
+            </span>
+          </div>
+          <div class="card">
+            <strong>Changes from RFC 793</strong>
+            <span>
+              The document provides a dedicated section listing changes from the
+              original TCP specification.
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section id="requirements">
+        <div class="section-kicker">Section 2.1</div>
+        <h2>Requirements Language</h2>
+
+        <p>
+          The key words used in this document have precise meanings when they appear
+          in <strong>all capitals</strong>. They are interpreted as described in
+          BCP 14, including RFC 2119 and RFC 8174.
+        </p>
+
+        <div class="keywords" aria-label="RFC requirement keywords">
+          <span class="keyword">MUST</span>
+          <span class="keyword">MUST NOT</span>
+          <span class="keyword">REQUIRED</span>
+          <span class="keyword">SHALL</span>
+          <span class="keyword">SHALL NOT</span>
+          <span class="keyword">SHOULD</span>
+          <span class="keyword">SHOULD NOT</span>
+          <span class="keyword">RECOMMENDED</span>
+          <span class="keyword">NOT RECOMMENDED</span>
+          <span class="keyword">MAY</span>
+          <span class="keyword">OPTIONAL</span>
+        </div>
+
+        <div class="requirement-box">
+          <h3>Why the labels matter</h3>
+          <p>
+            Each use of an RFC 2119 keyword is individually labeled and referenced in
+            Appendix B, which summarizes implementation requirements.
+          </p>
+          <p>
+            Sentences using <strong>MUST</strong> are labeled <strong>MUST-X</strong>.
+            Sentences using <strong>SHOULD</strong> use <strong>SHLD-X</strong>,
+            while <strong>MAY</strong> uses <strong>MAY-X</strong> and
+            <strong>RECOMMENDED</strong> uses <strong>REC-X</strong>.
+          </p>
+          <p>
+            For this labeling system, <strong>SHOULD NOT</strong> and
+            <strong>MUST NOT</strong> follow the same label families as
+            <strong>SHOULD</strong> and <strong>MUST</strong>.
+          </p>
+        </div>
+      </section>
+
+      <section id="concepts">
+        <div class="section-kicker">Section 2.2</div>
+        <h2>Key TCP Concepts</h2>
+
+        <p class="lead">
+          TCP provides applications with a reliable, in-order byte-stream service.
+          The following concepts describe the core behavior behind that service.
+        </p>
+
+        <div class="concept-list">
+          <article class="concept">
+            <div class="icon">01</div>
+            <div>
+              <strong>Reliable byte stream</strong>
+              <p>
+                TCP provides a reliable, in-order, byte-stream service to applications.
+              </p>
+            </div>
+          </article>
+
+          <article class="concept">
+            <div class="icon">02</div>
+            <div>
+              <strong>Segments and IP datagrams</strong>
+              <p>
+                The application byte stream is carried across the network through TCP
+                segments. Each TCP segment is sent as an IP datagram.
+              </p>
+            </div>
+          </article>
+
+          <article class="concept">
+            <div class="icon">03</div>
+            <div>
+              <strong>Loss and error handling</strong>
+              <p>
+                TCP detects packet loss using sequence numbers and detects errors using
+                per-segment checksums. Lost data is corrected through retransmission.
+              </p>
+            </div>
+          </article>
+
+          <article class="concept">
+            <div class="icon">04</div>
+            <div>
+              <strong>Unicast delivery</strong>
+              <p>
+                TCP supports unicast delivery. Some anycast applications can use TCP
+                without modifications, although lower-layer forwarding changes can
+                create instability risks.
+              </p>
+            </div>
+          </article>
+
+          <article class="concept">
+            <div class="icon">05</div>
+            <div>
+              <strong>Connection oriented</strong>
+              <p>
+                TCP is connection oriented, but it does not inherently provide a
+                liveness-detection mechanism.
+              </p>
+            </div>
+          </article>
+
+          <article class="concept">
+            <div class="icon">06</div>
+            <div>
+              <strong>Bidirectional data flow</strong>
+              <p>
+                Data can flow in both directions over a TCP connection. Applications
+                may still choose to send data in only one direction.
+              </p>
+            </div>
+          </article>
+
+          <article class="concept">
+            <div class="icon">07</div>
+            <div>
+              <strong>Port numbers</strong>
+              <p>
+                TCP uses port numbers to identify application services and multiplex
+                distinct flows between hosts.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <div class="callout">
+          <strong>Further reading</strong>
+          A more detailed comparison of TCP features with other transport protocols is
+          available in RFC 8095. The motivations for TCP and its role in the Internet
+          protocol stack are discussed in Section 2 of RFC 793.
+        </div>
+      </section>
+
+      <section id="summary">
+        <div class="section-kicker">At a glance</div>
+        <h2>TCP in one view</h2>
+
+        <div class="info-grid">
+          <div class="card">
+            <strong>Service</strong>
+            <span>Reliable, in-order byte stream</span>
+          </div>
+          <div class="card">
+            <strong>Transport unit</strong>
+            <span>TCP segment carried in an IP datagram</span>
+          </div>
+          <div class="card">
+            <strong>Reliability</strong>
+            <span>Sequence numbers, checksums, and retransmission</span>
+          </div>
+          <div class="card">
+            <strong>Communication</strong>
+            <span>Connection-oriented and bidirectional</span>
+          </div>
+          <div class="card">
+            <strong>Application identification</strong>
+            <span>Port numbers</span>
+          </div>
+          <div class="card">
+            <strong>Specification focus</strong>
+            <span>Normative behavior and basic interoperability</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    Prepared as a readable HTML presentation of the supplied TCP RFC excerpt.
+    References: RFC 9293, RFC 793, RFC 7414, RFC 8095, RFC 8684, RFC 7323,
+    RFC 5681, RFC 7094, RFC 2119, and RFC 8174.
+  </footer>
+</body>
+
+</html>
