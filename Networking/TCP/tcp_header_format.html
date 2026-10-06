@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TCP Header Format — ASD-STE100 Guide</title>
+  <meta name="description" content="A clear ASD-STE100-style guide to the TCP header format based on RFC 9293.">
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #fff;
+      --surface2: #eef3f9;
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --accent: #2457d6;
+      --accent2: #163b9d;
+      --good: #087443;
+      --warn: #9a5a00;
+      --danger: #a72a2a;
+      --code: #111827;
+      --shadow: 0 10px 30px rgba(22, 39, 72, .08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none
+    }
+
+    a:hover {
+      text-decoration: underline
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 32px));
+      margin: auto
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #10224d 0%, #173e86 55%, #2457d6 100%);
+      color: white;
+      padding: 64px 0 52px
+    }
+
+    .eyebrow {
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      opacity: .78
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.05;
+      margin: 12px 0 18px;
+      letter-spacing: -.04em
+    }
+
+    .hero p {
+      max-width: 780px;
+      font-size: 1.1rem;
+      color: #e7efff;
+      margin: 0
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 24px
+    }
+
+    .badge {
+      padding: 7px 11px;
+      border: 1px solid rgba(255, 255, 255, .22);
+      background: rgba(255, 255, 255, .1);
+      border-radius: 999px;
+      font-size: .82rem
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 28px;
+      align-items: start;
+      margin: 30px auto 70px
+    }
+
+    .toc {
+      position: sticky;
+      top: 18px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow)
+    }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 10px
+    }
+
+    .toc a {
+      display: block;
+      padding: 7px 8px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: .9rem
+    }
+
+    .toc a:hover {
+      background: var(--surface2);
+      color: var(--accent);
+      text-decoration: none
+    }
+
+    main {
+      min-width: 0
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 6px 20px rgba(22, 39, 72, .045)
+    }
+
+    h2 {
+      font-size: 1.7rem;
+      line-height: 1.2;
+      margin: 0 0 16px
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin: 24px 0 10px
+    }
+
+    p {
+      margin: 10px 0
+    }
+
+    .lead {
+      font-size: 1.05rem;
+      color: #344054
+    }
+
+    .callout {
+      border-left: 5px solid var(--accent);
+      background: #eef4ff;
+      padding: 16px 18px;
+      border-radius: 10px;
+      margin: 18px 0
+    }
+
+    .callout strong {
+      color: var(--accent2)
+    }
+
+    .req {
+      border-left-color: var(--danger);
+      background: #fff1f1
+    }
+
+    .rec {
+      border-left-color: var(--good);
+      background: #ecfaf3
+    }
+
+    .warn {
+      border-left-color: var(--warn);
+      background: #fff8e8
+    }
+
+    .header-diagram {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f8fafc;
+      padding: 18px;
+      margin: 20px 0
+    }
+
+    .bit-row {
+      display: grid;
+      grid-template-columns: repeat(32, minmax(24px, 1fr));
+      min-width: 780px;
+      border: 1px solid #aeb9c9
+    }
+
+    .bit-row span {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid #cbd3df;
+      background: #fff;
+      font-size: .68rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 4px
+    }
+
+    .bit-row span:last-child {
+      border-right: 0
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1.35fr .5fr 2fr;
+      gap: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 18px 0
+    }
+
+    .field-row>div {
+      padding: 13px 15px;
+      border-right: 1px solid var(--line)
+    }
+
+    .field-row>div:last-child {
+      border-right: 0
+    }
+
+    .field-row .name {
+      font-weight: 800;
+      background: #f8fafc
+    }
+
+    .field-row .bits {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--accent2);
+      font-size: .9rem
+    }
+
+    .flags {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 14px 0
+    }
+
+    .flag {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px
+    }
+
+    .flag b {
+      display: block;
+      color: var(--accent);
+      font-size: 1.05rem
+    }
+
+    .flag small {
+      color: var(--muted)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 13px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    th {
+      background: #f5f7fb;
+      font-size: .86rem
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #eef2f7;
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-size: .92em
+    }
+
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: var(--code);
+      color: #e8eefc;
+      border-radius: 10px;
+      padding: 14px;
+      overflow: auto
+    }
+
+    .pseudo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0
+    }
+
+    .pseudo div {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafbfd
+    }
+
+    .pseudo b {
+      display: block;
+      margin-bottom: 4px
+    }
+
+    footer {
+      padding: 30px 0 50px;
+      color: var(--muted);
+      font-size: .88rem
+    }
+
+    @media(max-width:820px) {
+      .layout {
+        grid-template-columns: 1fr
+      }
+
+      .toc {
+        position: static
+      }
+
+      .field-row {
+        grid-template-columns: 1fr
+      }
+
+      .field-row>div {
+        border-right: 0;
+        border-bottom: 1px solid var(--line)
+      }
+
+      .field-row>div:last-child {
+        border-bottom: 0
+      }
+
+      .flags {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      section {
+        padding: 22px
+      }
+    }
+
+    @media(max-width:520px) {
+      .container {
+        width: min(100% - 20px, 1120px)
+      }
+
+      .hero {
+        padding: 42px 0
+      }
+
+      .flags {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">TCP • RFC 9293 • ASD-STE100 Style</div>
+      <h1>TCP Header Format</h1>
+      <p>A clear guide to the fields, control bits, checksum, options, and user data in a TCP segment.</p>
+      <div class="badges">
+        <span class="badge">Easy to scan</span>
+        <span class="badge">Technical meaning preserved</span>
+        <span class="badge">Responsive HTML</span>
+        <span class="badge">Based on RFC 9293</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container layout">
+    <nav class="toc" aria-label="Contents">
+      <strong>On this page</strong>
+      <a href="#overview">1. Overview</a>
+      <a href="#header">2. TCP header</a>
+      <a href="#fields">3. Header fields</a>
+      <a href="#flags">4. Control bits</a>
+      <a href="#checksum">5. Checksum</a>
+      <a href="#options">6. Options</a>
+      <a href="#mandatory">7. Mandatory options</a>
+      <a href="#data">8. User data</a>
+    </nav>
+
+    <main>
+      <section id="overview">
+        <h2>1. Overview</h2>
+        <p class="lead">TCP segments are carried inside IP packets. The IP header contains the source and destination
+          host addresses. The TCP header follows the IP header.</p>
+        <p>This separation allows other transport protocols to use IP. TCP adds the information that is required to
+          provide TCP communication.</p>
+        <div class="callout">
+          <strong>Key point:</strong> This page describes the TCP header used by TCP. The IP header is not part of the
+          TCP header.
+        </div>
+        <p><a href="https://www.rfc-editor.org/rfc/rfc9293.html#name-header-format" target="_blank" rel="noopener">See
+            RFC 9293 — Header Format</a></p>
+      </section>
+
+      <section id="header">
+        <h2>2. TCP header</h2>
+        <p>The TCP header is followed by the user data carried by the segment. The header contains fields for ports,
+          sequence control, acknowledgments, flow control, error detection, urgent data, and options.</p>
+
+        <div class="header-diagram" role="img" aria-label="Simplified TCP header layout">
+          <div class="bit-row">
+            <span style="grid-column:span 16">Source Port<br>16 bits</span>
+            <span style="grid-column:span 16">Destination Port<br>16 bits</span>
+          </div>
+          <div class="bit-row">
+            <span style="grid-column:span 32">Sequence Number — 32 bits</span>
+          </div>
+          <div class="bit-row">
+            <span style="grid-column:span 32">Acknowledgment Number — 32 bits</span>
+          </div>
+          <div class="bit-row">
+            <span style="grid-column:span 4">Data<br>Offset</span>
+            <span style="grid-column:span 4">Reserved</span>
+            <span style="grid-column:span 8">Control bits</span>
+            <span style="grid-column:span 16">Window — 16 bits</span>
+          </div>
+          <div class="bit-row">
+            <span style="grid-column:span 16">Checksum — 16 bits</span>
+            <span style="grid-column:span 16">Urgent Pointer — 16 bits</span>
+          </div>
+          <div class="bit-row">
+            <span style="grid-column:span 32">Options and padding — variable</span>
+          </div>
+          <div class="bit-row">
+            <span style="grid-column:span 32">User Data — variable length</span>
+          </div>
+        </div>
+        <img src="TCP_Header_Format_Infographic.png" alt="TCP header diagram"
+          style="max-width:100%;border-radius:12px;margin-top:16px">
+      </section>
+
+      <section id="fields">
+        <h2>3. Header fields</h2>
+
+        <div class="field-row">
+          <div class="name">Source Port</div>
+          <div class="bits">16 bits</div>
+          <div>The port number of the sender.</div>
+        </div>
+        <div class="field-row">
+          <div class="name">Destination Port</div>
+          <div class="bits">16 bits</div>
+          <div>The port number of the receiver.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="name">Sequence Number</div>
+          <div class="bits">32 bits</div>
+          <div>The sequence number of the first data octet in this segment. If <code>SYN</code> is set, the value is the
+            Initial Sequence Number (ISN). The first data octet then has sequence number <code>ISN + 1</code>.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="name">Acknowledgment Number</div>
+          <div class="bits">32 bits</div>
+          <div>If <code>ACK</code> is set, this field contains the next sequence number that the sender expects to
+            receive. After a connection is established, TCP sends this field.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="name">Data Offset (DOffset)</div>
+          <div class="bits">4 bits</div>
+          <div>The number of 32-bit words in the TCP header. It shows where the user data starts. The complete TCP
+            header is always a whole number of 32-bit words.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="name">Reserved</div>
+          <div class="bits">4 bits</div>
+          <div>Bits reserved for future use. A sender <strong>must</strong> set these bits to zero. A receiver must
+            ignore them when the related future feature is not implemented.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="name">Window</div>
+          <div class="bits">16 bits</div>
+          <div>The number of data octets, starting at the acknowledged sequence number, that the sender is ready to
+            receive. Window scaling can change the effective window size.</div>
+        </div>
+
+        <div class="callout req"><strong>Requirement:</strong> Treat the window value as an unsigned number. Otherwise,
+          large window values can appear negative and TCP can fail.</div>
+        <div class="callout rec"><strong>Recommendation:</strong> Implementations should reserve 32-bit fields for send
+          and receive window sizes and perform window calculations with 32 bits.</div>
+
+        <div class="field-row">
+          <div class="name">Checksum</div>
+          <div class="bits">16 bits</div>
+          <div>The checksum detects errors in the TCP header and data. It also includes an IP pseudo-header in the
+            checksum calculation.</div>
+        </div>
+        <img src="Checksum.png" alt="TCP checksum diagram" style="max-width:100%;border-radius:12px;margin-top:16px">
+
+        <div class="field-row">
+          <div class="name">Urgent Pointer</div>
+          <div class="bits">16 bits</div>
+          <div>The current urgent-pointer value is a positive offset from the sequence number in the segment. It points
+            to the sequence number of the octet after the urgent data. Interpret this field only when <code>URG</code>
+            is set.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="name">Options</div>
+          <div class="bits">Variable</div>
+          <div>TCP options can extend the header. Options are present when <code>DOffset &gt; 5</code>. Padding can be
+            included after the actual options.</div>
+        </div>
+      </section>
+
+      <section id="flags">
+        <h2>4. Control bits</h2>
+        <p>Control bits are also called <strong>flags</strong>. IANA manages the assignment of TCP header flags. The
+          currently assigned flags are:</p>
+        <div class="flags">
+          <div class="flag"><b>CWR</b><small>Congestion Window Reduced.</small></div>
+          <div class="flag"><b>ECE</b><small>ECN-Echo.</small></div>
+          <div class="flag"><b>URG</b><small>Urgent pointer is significant.</small></div>
+          <div class="flag"><b>ACK</b><small>Acknowledgment field is significant.</small></div>
+          <div class="flag"><b>PSH</b><small>Push function.</small></div>
+          <div class="flag"><b>RST</b><small>Reset the connection.</small></div>
+          <div class="flag"><b>SYN</b><small>Synchronize sequence numbers.</small></div>
+          <div class="flag"><b>FIN</b><small>No more data from the sender.</small></div>
+        </div>
+        <p><a href="https://www.iana.org/assignments/tcp-parameters/tcp-parameters.xhtml#tcp-header-flags"
+            target="_blank" rel="noopener">See IANA TCP Header Flags Registry</a></p>
+      </section>
+
+      <section id="checksum">
+        <h2>5. Checksum</h2>
+        <p>The TCP checksum is a 16-bit one's-complement checksum. It covers the TCP header and TCP data.</p>
+        <h3>Checksum alignment</h3>
+        <p>The checksum calculation works with 16-bit words. If the header and data contain an odd number of octets, add
+          a zero octet on the right for the calculation. This padding is not sent as part of the TCP segment.</p>
+        <p>Before the calculation, set the checksum field itself to zero.</p>
+
+        <h3>IP pseudo-header</h3>
+        <p>The checksum also covers a pseudo-header. The pseudo-header helps protect a TCP connection against
+          incorrectly routed segments.</p>
+
+        <div class="pseudo">
+          <div><b>IPv4</b>96-bit pseudo-header.</div>
+          <div><b>IPv6</b>320-bit pseudo-header.</div>
+        </div>
+
+        <h3>IPv4 pseudo-header fields</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Source Address</td>
+              <td>IPv4 source address, in network byte order.</td>
+            </tr>
+            <tr>
+              <td>Destination Address</td>
+              <td>IPv4 destination address, in network byte order.</td>
+            </tr>
+            <tr>
+              <td>Zero</td>
+              <td>Bits set to zero.</td>
+            </tr>
+            <tr>
+              <td>PTCL</td>
+              <td>Protocol number from the IP header.</td>
+            </tr>
+            <tr>
+              <td>TCP Length</td>
+              <td>TCP header length plus TCP data length, in octets. It does not include the 12-octet IPv4
+                pseudo-header.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>IPv6 pseudo-header</h3>
+        <p>RFC 8200 defines the IPv6 pseudo-header. It contains the IPv6 source and destination addresses, the
+          upper-layer packet length, three zero-padding bytes, and a Next Header value. The Next Header value can differ
+          from the IPv6 header value when IPv6 extension headers are present.</p>
+
+        <div class="callout req"><strong>Mandatory:</strong> The TCP checksum is never optional. The sender
+          <strong>must</strong> generate it. The receiver <strong>must</strong> check it.
+        </div>
+      </section>
+
+      <section id="options">
+        <h2>6. TCP options</h2>
+        <p>TCP options can appear at the end of the TCP header. Their total space is:</p>
+        <div class="formula">Options size = (DOffset − 5) × 32 bits</div>
+        <p>This size includes any padding after the actual options.</p>
+
+        <h3>Option format</h3>
+        <p>Options are multiples of 8 bits. An option can start at any octet boundary.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>Format</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Case 1</td>
+              <td>One octet containing the option kind.</td>
+            </tr>
+            <tr>
+              <td>Case 2</td>
+              <td>Option kind + option length + option data.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The option length includes the option-kind octet, the option-length octet, and all option-data octets.</p>
+
+        <div class="callout warn"><strong>Padding rule:</strong> The option list can be shorter than the space indicated
+          by DOffset. After the End of Option List option, the remaining header space must contain zero padding.</div>
+
+        <p>IANA maintains the list of defined TCP options. Each option is specified by another RFC. The list also
+          includes experimental options.</p>
+      </section>
+
+      <section id="mandatory">
+        <h2>7. Mandatory options</h2>
+        <p>A TCP implementation can support any defined TCP option. It <strong>must</strong> support the following
+          options:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Kind</th>
+              <th>Length</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>0</code></td>
+              <td>—</td>
+              <td>End of Option List (EOL)</td>
+            </tr>
+            <tr>
+              <td><code>1</code></td>
+              <td>—</td>
+              <td>No-Operation (NOP)</td>
+            </tr>
+            <tr>
+              <td><code>2</code></td>
+              <td><code>4</code></td>
+              <td>Maximum Segment Size (MSS)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout req"><strong>Receive rule:</strong> A TCP implementation must be able to receive a TCP
+          option in any segment.</div>
+        <div class="callout req"><strong>Unknown options:</strong> If an option has a length field and the
+          implementation does not support it, the implementation must ignore it without error.</div>
+        <div class="callout req"><strong>Length rule:</strong> All TCP options except EOL and NOP must have a length
+          field. Future options must also have a length field.</div>
+        <div class="callout warn"><strong>Invalid length:</strong> Implementations must handle illegal option lengths,
+          such as zero. One suggested action is to reset the connection and record the error.</div>
+
+        <p>Work is also in progress to extend the space available for TCP options.</p>
+        <p><a href="https://www.rfc-editor.org/rfc/rfc9293.html#Option-Definitions" target="_blank" rel="noopener">See
+            RFC 9293 — Option Definitions</a></p>
+      </section>
+
+      <section id="data">
+        <h2>8. User data</h2>
+        <div class="field-row">
+          <div class="name">Data</div>
+          <div class="bits">Variable length</div>
+          <div>User data carried by the TCP segment.</div>
+        </div>
+        <p>The TCP header is followed by this data. The data length is not fixed by the TCP header format.</p>
+      </section>
+
+      <section>
+        <h2>Quick reference</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Main rule</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ports</td>
+              <td>Identify the TCP source and destination ports.</td>
+            </tr>
+            <tr>
+              <td>Sequence / ACK</td>
+              <td>Control the position of data and confirm received data.</td>
+            </tr>
+            <tr>
+              <td>DOffset</td>
+              <td>Shows where TCP data begins.</td>
+            </tr>
+            <tr>
+              <td>Flags</td>
+              <td>Control TCP functions such as SYN, ACK, RST, and FIN.</td>
+            </tr>
+            <tr>
+              <td>Window</td>
+              <td>Shows how much data the receiver is ready to accept.</td>
+            </tr>
+            <tr>
+              <td>Checksum</td>
+              <td>Must be generated by the sender and checked by the receiver.</td>
+            </tr>
+            <tr>
+              <td>Options</td>
+              <td>Extend the TCP header and must follow TCP option rules.</td>
+            </tr>
+            <tr>
+              <td>Data</td>
+              <td>Carries user data and has variable length.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <div class="container">
+      <strong>Source:</strong> RFC 9293, Transmission Control Protocol (TCP). This page is a readability-focused,
+      ASD-STE100-style presentation of the supplied material; it is not a replacement for the RFC.
+      <br><br>
+      <a href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noopener">Open RFC 9293</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.iana.org/assignments/tcp-parameters/tcp-parameters.xhtml" target="_blank" rel="noopener">IANA
+        TCP Parameters</a>
+    </div>
+  </footer>
+</body>
+
+</html>
